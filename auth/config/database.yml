@@ -1,0 +1,22 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  host: localhost
+  port: 5434
+  username: postgres
+  password: password
+
+development:
+  <<: *default
+  database: auth_dev
+
+test:
+  <<: *default
+  database: auth_test
+
+production:
+  <<: *default
+  database: auth_production
+  username: auth
+  password: <%= ENV["AUTH_DATABASE_PASSWORD"] %>
