@@ -4,8 +4,10 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "articles#index"
-  resources :users, only: %i[index update destroy]
   post :sign_up, to: 'users#create'
   post :sign_in, to: 'user_sessions#create'
+  delete :sign_out, to: 'user_sessions#destroy'
   get :auth, to: 'auth#index'
+
+  resources :users, only: %i[index update destroy]
 end

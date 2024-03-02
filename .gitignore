@@ -17,6 +17,8 @@
 .byebug_history
 auth/tmp
 auth/log
+tasks/tmp
+tasks/log
 
 ## Specific to RubyMotion:
 .dat*
