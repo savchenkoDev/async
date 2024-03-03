@@ -1,4 +1,6 @@
 class UserSessionsController < ApplicationController
+  include Authenticable
+
   def create
     if user&.valid_password?(session_params[:password])
       @session = user.sessions.create
@@ -11,7 +13,7 @@ class UserSessionsController < ApplicationController
   end
 
   def destroy
-    @session = UserSession.find(params[:id])
+    @session = UserSession.find(extracted_token['uuid'])
 
     @session.destroy
     head :ok

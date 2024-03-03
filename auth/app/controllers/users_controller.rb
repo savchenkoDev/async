@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   include Authenticable
 
-  before_action :authenticate!, only: [:index, :update, :destroy]
+  before_action :authenticate_user!, only: [:index, :update, :destroy]
 
   def index
     @users = User.all
@@ -11,13 +11,14 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
 
     if @user.save
+      @user.reload
       event = {
-        title: 'UserCreated',
-        data: serialized_user(@user.reload)
+        event_name: 'UserCreated',
+        data: @user.to_json
       }
-      
-      Producer.call(event, topic: 'users_created')
-      render json: serialized_user(@user.reload), status: 201
+      Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
+
+      render json: @user.to_json, status: 201
     else
       render json: @user.errors.messages, status: 422
     end
@@ -25,9 +26,22 @@ class UsersController < ApplicationController
 
   def update
     @user = User.find(params[:id])
-
+    
     if @user.update(user_params)
-      render json: @user.to_h, status: 201
+      event = {
+        event_name: 'UserChanged',
+        data: @user.to_json
+      }
+      Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
+
+      if user_params[:role].present?
+        event = {
+          event_name: 'UserRoleUpdated',
+          data: @user.to_json
+        }
+        Producer.produce_sync(payload: event.to_json, topic: 'users')
+      end
+      render json: @user.to_json, status: 201
     else
       render json: @user.errors.messages, status: 422
     end
@@ -37,6 +51,11 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
 
     @user.destroy
+    event = {
+      event_name: 'UserDeleted',
+      data: @user.to_json
+    }
+    Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
     head :ok
   end
 

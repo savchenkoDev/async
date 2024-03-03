@@ -1,3 +1,5 @@
 app:
   name: auth
   secret: 63c15ef2f4b8ae0e9c9f8761b6063ef166681597
+kafka:
+  url: localhost:29092

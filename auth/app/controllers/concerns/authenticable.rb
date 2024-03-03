@@ -1,4 +1,6 @@
 module Authenticable
+  AUTH_TOKEN = %r{\ABearer (?<token>.+)\z}
+
   def authenticate_user!
     return if current_user.present?
 
@@ -8,7 +10,7 @@ module Authenticable
 
   def current_user
     return @current_user if defined?(@current_user)
-    session = UserSession.find(extracted_token[:uuid])
+    session = UserSession.find(extracted_token['uuid'])
 
     @current_user = session.user
   end
