@@ -19,7 +19,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_03_072132) do
     t.string "title"
     t.string "description"
     t.decimal "cost"
-    t.string "status", null: false
+    t.string "status", default: "opened", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

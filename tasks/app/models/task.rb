@@ -4,6 +4,11 @@ class Task < ApplicationRecord
   before_create :assign_cost
   after_create :assign_user
 
+  enum :status, {
+    opened: 'opened',
+    finished: 'finished'
+  }
+
   def finish!
     update!(status: 'finished')
   end
@@ -18,8 +23,12 @@ class Task < ApplicationRecord
     update(user_id: User.where(role: 'popug').sample.public_id)
     event = {
       event_name: 'TaskAssigned',
-      data: self.to_json
+      data: {
+        user_id: self.user_id,
+        cost: self.cost
+      }
     }
-    Producer.produce_async(topic: 'tasks', payload: event.to_json)
+
+    Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
   end
 end

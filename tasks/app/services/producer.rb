@@ -4,11 +4,11 @@ class Producer
   end
 
   def self.produce_async(topic:, payload:)
-    new.produce_async(topic: topic, payload: topic)
+    new.produce_async(topic: topic, payload: payload)
   end
 
   def initialize
-    @producer = build_produder
+    @producer = build_producer
   end
 
   def produce_sync(payload:, topic:)
@@ -21,7 +21,7 @@ class Producer
 
   private
   
-  def build_produder
+  def build_producer
     WaterDrop::Producer.new do |config|
       config.deliver = true
       config.kafka = {

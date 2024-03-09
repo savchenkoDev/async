@@ -5,7 +5,7 @@ class CreateTasks < ActiveRecord::Migration[7.0]
       t.string :title
       t.string :description
       t.decimal :cost
-      t.string :status, null: false, dafault: 'opened'
+      t.string :status, null: false, default: 'opened'
 
       t.timestamps
     end

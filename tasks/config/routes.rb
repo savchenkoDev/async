@@ -5,5 +5,8 @@ Rails.application.routes.draw do
   root "tasks#index"
   post 'auth', to: 'application#auth'
 
-  resources :tasks, only: %i[index create update destroy]
+  resources :tasks, only: %i[index create update destroy] do
+    post :finish, on: :member
+    post :shuffle, on: :collection
+  end
 end

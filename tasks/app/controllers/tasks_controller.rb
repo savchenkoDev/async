@@ -46,14 +46,36 @@ class TasksController < ApplicationController
 
   def finish
     @task = Task.find(params[:id])
-    @task.finiish!
+    return render json: { error: 'Unauthorized' }, status: 403 unless current_user_id == @task.user_id
+
+    @task.finish!
     event = {
       event_name: 'TaskFinished',
       data: @task.to_json
     }
-    Producer.produce_async(topic: 'tasks', payload: event.to_json)
+    Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
 
     head :ok
+  end
+
+  def shuffle
+    @tasks = Task.opened
+    @users = User.where(role: 'popug')
+
+    @tasks.each do |task|
+      old_user_id = task.user_id
+      if task.update(user_id: @users.sample.public_id)
+        event = {
+          event_name: 'TaskShuffled',
+          data: {
+            id: task.id,
+            old_user_id: old_user_id,
+            new_user_id: task.reload.user_id
+          }
+        }
+        Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
+      end
+    end
   end
 
   def destroy
@@ -61,10 +83,11 @@ class TasksController < ApplicationController
 
     @task.destroy
     event = {
-        event_name: 'TaskDeleted',
-        data: @task.to_json
-      }
-      Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
+      event_name: 'TaskDeleted',
+      data: @task.to_json
+    }
+    Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
+
     head :ok
   end
 
