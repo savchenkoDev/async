@@ -6,7 +6,6 @@ class Audit < ApplicationRecord
   private
 
   def produce_event
-    byebug
     event = {
       event_name: 'AuditCreated',
       data: self

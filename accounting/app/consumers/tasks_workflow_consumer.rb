@@ -1,32 +1,26 @@
 class TasksWorkflowConsumer < ApplicationConsumer
   def consume
     messages.each do |message|
-      byebug
+      data = message.payload['data']
+      user = User.find_by(public_id: data['user_id'])
       case message.payload['event_name']
       when 'TaskAssigned'
-        parsed_data = parse_user_data(message.payload['data'])
-        account = Account.find_by(user_id: parsed_data[:user_id])
-        account.decrement(parsed_data[:cost])
-        account.audits.create(amount: parsed_data[:cost] * -1)
+        user.account.decrement!(data['cost'].to_d)
+        user.account.audits.create(amount: data['cost'].to_d * -1)
       when 'TaskFinished'
-        parsed_data = parse_user_data(message.payload['data'])
-        account = Account.find_by(user_id: parsed_data[:user_id])
-        account.increment(parsed_data[:cost])
-        account.audits.create(amount: parsed_data[:cost])
+        user.account.increment!(data['cost'].to_d)
+        user.account.audits.create(amount: data['cost'].to_d)
       when 'TaskShuffled'
-        parsed_data = parse_user_data(message.payload['data'])
-        old_account = Account.find_by(user_id: parsed_data[:old_user_id])
-        old_account.increment(parsed_data[:cost])
-        old_account.audits.create(amount: parsed_data[:cost])
+        old_user = User.find_by(public_id: data['old_user_id'])
+        old_user.account.increment!(data['cost'].to_d)
+        old_user.account.audits.create(amount: data['cost'].to_d)
 
-        new_account = Account.find_by(user_id: parsed_data[:new_user_id])
-        new_account.decrement(parsed_data[:cost])
-        new_account.audits.create(amount: parsed_data[:cost] * -1)
+        new_user = User.find_by(public_id: data['new_user_id'])
+        new_useraccount.decrement!(data['cost'].to_d)
+        new_useraccount.audits.create(amount: data['cost'].to_d * -1)
       else
         puts "Unknown Event: #{message.payload['event_name']}"
       end
     end
   end
-
-  private
 end

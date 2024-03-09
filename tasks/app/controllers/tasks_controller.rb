@@ -46,13 +46,13 @@ class TasksController < ApplicationController
 
   def finish
     @task = Task.find(params[:id])
-    return render json: { error: 'Unauthorized' }, status: 403 unless current_user_id == @task.user_id
+    return render json: { error: 'Unauthorized' }, status: 403 unless current_user_id == @task.user.public_id
 
     @task.finish!
     event = {
       event_name: 'TaskFinished',
       data: {
-        task_id: @task.public_id,
+        user_id: @task.user.public_id,
         cost: @task.cost,
       }
     }
@@ -62,7 +62,7 @@ class TasksController < ApplicationController
   end
 
   def shuffle
-    @tasks = Task.opened.inclues(:user)
+    @tasks = Task.opened.includes(:user)
     @users = User.where(role: 'popug')
 
     @tasks.each do |task|
@@ -79,6 +79,8 @@ class TasksController < ApplicationController
         Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
       end
     end
+
+    head :ok
   end
 
   def destroy

@@ -1,6 +1,6 @@
 class Account < ApplicationRecord
   has_many :audits
-  validates :user_id, uniqueness: true
+  belongs_to :user
 
   def increment!(value)
     self.balance += value
