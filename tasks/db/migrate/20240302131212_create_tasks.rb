@@ -1,7 +1,8 @@
 class CreateTasks < ActiveRecord::Migration[7.0]
   def change
     create_table :tasks do |t|
-      t.uuid :user_id
+      t.references :user
+      t.uuid :public_id
       t.string :title
       t.string :description
       t.decimal :cost
@@ -9,5 +10,7 @@ class CreateTasks < ActiveRecord::Migration[7.0]
 
       t.timestamps
     end
+
+    add_index :tasks, :public_id, unique: true
   end
 end

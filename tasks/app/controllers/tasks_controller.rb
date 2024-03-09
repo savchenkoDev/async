@@ -15,15 +15,15 @@ class TasksController < ApplicationController
   end
 
   def create
-    @task = Task.new(task_params)
+    @task = current_user.tasks.new(task_params)
 
     if @task.save
       event = {
         event_name: 'TaskCreated',
-        data: @task
+        data: @task.to_h
       }
       Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
-      render json: @task.to_json, states: 201
+      render json: @task.to_h, states: 201
     else
       render json: { errors: @task.errors }, states: 201
     end
@@ -35,10 +35,10 @@ class TasksController < ApplicationController
     if @task.update(task_params)
       event = {
         event_name: 'TaskChanged',
-        data: @task
+        data: @task.to_h
       }
       Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
-      render json: @task.reload.to_json, states: 201
+      render json: @task.reload.to_h, states: 201
     else
       render json: { errors: @task.errors }, states: 422
     end
@@ -51,7 +51,10 @@ class TasksController < ApplicationController
     @task.finish!
     event = {
       event_name: 'TaskFinished',
-      data: @task
+      data: {
+        task_id: @task.public_id,
+        cost: @task.cost,
+      }
     }
     Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
 
@@ -59,18 +62,18 @@ class TasksController < ApplicationController
   end
 
   def shuffle
-    @tasks = Task.opened
+    @tasks = Task.opened.inclues(:user)
     @users = User.where(role: 'popug')
 
     @tasks.each do |task|
-      old_user_id = task.user_id
+      old_user_id = task.user.public_id
       if task.update(user_id: @users.sample.public_id)
         event = {
           event_name: 'TaskShuffled',
           data: {
             id: task.id,
             old_user_id: old_user_id,
-            new_user_id: task.reload.user_id
+            new_user_id: task.user.public_id
           }
         }
         Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)

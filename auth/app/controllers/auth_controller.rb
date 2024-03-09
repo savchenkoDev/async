@@ -4,6 +4,6 @@ class AuthController < ApplicationController
   def index
     @session = UserSession.find_by(id: extracted_token['uuid'])
 
-    render json: { user_id: @session&.user_id }
+    render json: { public_id: @session&.user.public_id }
   end
 end

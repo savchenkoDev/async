@@ -3,7 +3,7 @@ module AuthService
 
   def self.auth(header)
     response = connection.get('/auth', {}, { 'Authorization' => header })
-    JSON.parse(response.body)['user_id']
+    JSON.parse(response.body)['public_id']
   end
 
   private

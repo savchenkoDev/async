@@ -3,14 +3,14 @@ class User < ApplicationRecord
 
   has_many :sessions, class_name: 'UserSession', dependent: :destroy
 
+  before_create :assign_public_id
+
   enum :role, {
     admin: 'admin',
     manager: 'manager',
     popug: 'popug',
     accountant: 'accountant'
   }
-
-  before_create :assign_public_id
 
   def to_h
     {

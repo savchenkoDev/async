@@ -10,22 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_03_03_072132) do
+ActiveRecord::Schema[7.0].define(version: 2024_03_02_131212) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "tasks", force: :cascade do |t|
-    t.uuid "user_id"
+    t.bigint "user_id"
+    t.uuid "public_id"
     t.string "title"
     t.string "description"
     t.decimal "cost"
     t.string "status", default: "opened", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["public_id"], name: "index_tasks_on_public_id", unique: true
+    t.index ["user_id"], name: "index_tasks_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "public_id"
+    t.uuid "public_id"
     t.string "full_name"
     t.string "role"
     t.string "email"
