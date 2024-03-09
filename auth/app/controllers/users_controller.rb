@@ -14,11 +14,11 @@ class UsersController < ApplicationController
       @user.reload
       event = {
         event_name: 'UserCreated',
-        data: @user
+        data: @user.to_h
       }
       Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
 
-      render json: @user.to_json, status: 201
+      render json: @user.to_h, status: 201
     else
       render json: @user.errors.messages, status: 422
     end
@@ -30,19 +30,19 @@ class UsersController < ApplicationController
     if @user.update(user_params)
       event = {
         event_name: 'UserChanged',
-        data: @user
+        data: @user.to_h
       }
       Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
 
       if user_params[:role].present?
         event = {
           event_name: 'UserRoleUpdated',
-          data: @user
+          data: @user.to_h
         }
         Producer.produce_sync(payload: event.to_json, topic: 'users')
       end
 
-      render json: @user.to_json, status: 201
+      render json: @user.to_h, status: 201
     else
       render json: @user.errors.messages, status: 422
     end
@@ -54,22 +54,13 @@ class UsersController < ApplicationController
     @user.destroy
     event = {
       event_name: 'UserDeleted',
-      data: @user
+      data: @user.public_id
     }
     Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
     head :ok
   end
 
   private
-
-  def serialized_user(user)
-    {
-      "public_id": user.id,
-      "email": user.email,
-      "full_name": user.full_name,
-      "role": user.role
-    }
-  end
 
   def user_params
     params.require(:user).permit(:full_name, :email, :role, :password)

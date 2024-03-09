@@ -22,7 +22,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_02_29_105137) do
     t.index ["user_id"], name: "index_user_sessions_on_user_id"
   end
 
-  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
+    t.uuid "public_id", null: false
     t.string "full_name"
     t.string "role", default: "popug", null: false
     t.datetime "created_at", null: false
@@ -30,6 +31,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_02_29_105137) do
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["public_id"], name: "index_users_on_public_id", unique: true
   end
 
 end

@@ -22,6 +22,8 @@ module Auth
   class Application < Rails::Application
     config.load_defaults 7.0
 
+    config.autoload_paths << 'lib'
+
     config.api_only = true
   end
 end
