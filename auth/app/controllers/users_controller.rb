@@ -14,7 +14,7 @@ class UsersController < ApplicationController
       @user.reload
       event = {
         event_name: 'UserCreated',
-        data: @user.to_json
+        data: @user
       }
       Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
 
@@ -30,17 +30,18 @@ class UsersController < ApplicationController
     if @user.update(user_params)
       event = {
         event_name: 'UserChanged',
-        data: @user.to_json
+        data: @user
       }
       Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
 
       if user_params[:role].present?
         event = {
           event_name: 'UserRoleUpdated',
-          data: @user.to_json
+          data: @user
         }
         Producer.produce_sync(payload: event.to_json, topic: 'users')
       end
+
       render json: @user.to_json, status: 201
     else
       render json: @user.errors.messages, status: 422
@@ -53,7 +54,7 @@ class UsersController < ApplicationController
     @user.destroy
     event = {
       event_name: 'UserDeleted',
-      data: @user.to_json
+      data: @user
     }
     Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
     head :ok

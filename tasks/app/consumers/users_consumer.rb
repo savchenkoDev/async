@@ -3,26 +3,18 @@ class UsersConsumer < ApplicationConsumer
     messages.each do |message|
       case message.payload['event_name']
       when 'UserCreated'
-        user_data = parse_user_data(message.payload['data'])
-        User.create(user_data)
+        user_data = message.payload['data']
+        User.create(user_data.except('id'))
       when 'UserChanged'
-        user_data = parse_user_data(message.payload['data'])
-        User.find_by(public_id: user_data[:public_id]).update(user_data.except(:public_id))
+        user_data = message.payload['data']
+        User.find_by(public_id: user_data['id']).update(user_data.except('id'))
       when 'UserDeleted'
-        user_data = parse_user_data(message.payload['data'])
-        User.find_by(public_id: user_data[:public_id]).destroy
+        user_data = message.payload['data']
+        User.find_by(public_id: user_data['id']).destroy
       when 'UserRoleUpdated'
       else
         puts "Unknown Event: #{message.payload['event_name']}"
       end
     end
-  end
-
-  private
-
-  def parse_user_data(data)
-    user_data = JSON.parse(data)
-    user_data['public_id'] = user_data.delete('id')
-    user_data.with_indifferent_access
   end
 end

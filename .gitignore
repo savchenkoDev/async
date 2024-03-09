@@ -19,6 +19,8 @@ auth/tmp
 auth/log
 tasks/tmp
 tasks/log
+accounting/tmp
+accounting/log
 
 ## Specific to RubyMotion:
 .dat*

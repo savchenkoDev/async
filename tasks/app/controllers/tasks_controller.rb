@@ -20,7 +20,7 @@ class TasksController < ApplicationController
     if @task.save
       event = {
         event_name: 'TaskCreated',
-        data: @task.to_json
+        data: @task
       }
       Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
       render json: @task.to_json, states: 201
@@ -35,7 +35,7 @@ class TasksController < ApplicationController
     if @task.update(task_params)
       event = {
         event_name: 'TaskChanged',
-        data: @task.to_json
+        data: @task
       }
       Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
       render json: @task.reload.to_json, states: 201
@@ -51,7 +51,7 @@ class TasksController < ApplicationController
     @task.finish!
     event = {
       event_name: 'TaskFinished',
-      data: @task.to_json
+      data: @task
     }
     Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
 
@@ -84,7 +84,7 @@ class TasksController < ApplicationController
     @task.destroy
     event = {
       event_name: 'TaskDeleted',
-      data: @task.to_json
+      data: @task.id
     }
     Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
 

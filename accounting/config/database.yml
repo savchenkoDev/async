@@ -1,0 +1,22 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  host: localhost
+  port: 5434
+  username: postgres
+  password: password
+
+development:
+  <<: *default
+  database: accounting_dev
+
+test:
+  <<: *default
+  database: accounting_test
+
+production:
+  <<: *default
+  database: accounting_production
+  username: accounting
+  password: <%= ENV["ACCOUNTING_DATABASE_PASSWORD"] %>
