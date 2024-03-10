@@ -10,16 +10,24 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
 
-    if @user.save
-      @user.reload
+    User.transaction do
+      @user.save
       event = {
+        event_id: SecureRandom.uuid,
+        event_version: 1,
         event_name: 'UserCreated',
+        event_time: Time.current.to_s,
+        producer: 'user_service',
         data: @user.to_h
       }
-      Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
+      registry = SchemaRegistry.validate_event(event, 'user.created')
 
-      render json: @user.to_h, status: 201
-    else
+      if registry.success?
+        Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
+      else
+        raise 'InvalidEventError'
+      end
+    rescue ActiveRecord::Rollback, InvalidEventError
       render json: @user.errors.messages, status: 422
     end
   end
@@ -29,19 +37,36 @@ class UsersController < ApplicationController
     
     if @user.update(user_params)
       event = {
+        event_id: SecureRandom.uuid,
+        event_version: 1,
         event_name: 'UserChanged',
+        event_time: Time.current.to_s,
+        producer: 'user_service',
         data: @user.to_h
       }
-      Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
+      registry = SchemaRegistry.validate_event(event, 'user.created')
+      if registry.success?
+        Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
+      else
+        raise 'InvalidEventError'
+      end
 
       if user_params[:role].present?
         event = {
+          event_id: SecureRandom.uuid,
+          event_version: 1,
           event_name: 'UserRoleUpdated',
+          event_time: Time.current.to_s,
+          producer: 'user_service',
           data: @user.to_h
         }
-        Producer.produce_sync(payload: event.to_json, topic: 'users')
+        registry = SchemaRegistry.validate_event(event, 'user.created')
+        if registry.success?
+          Producer.produce_sync(payload: event.to_json, topic: 'users')
+        else
+          raise 'InvalidEventError'
+        end
       end
-
       render json: @user.to_h, status: 201
     else
       render json: @user.errors.messages, status: 422
@@ -54,7 +79,7 @@ class UsersController < ApplicationController
     @user.destroy
     event = {
       event_name: 'UserDeleted',
-      data: @user.public_id
+      data: { public_id: @user.public_id}
     }
     Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
     head :ok

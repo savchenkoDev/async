@@ -19,10 +19,20 @@ class TasksController < ApplicationController
 
     if @task.save
       event = {
+        event_id: SecureRandom.uuid,
+        event_version: 1,
         event_name: 'TaskCreated',
+        event_time: Time.current.to_s,
+        producer: 'tasks_service',
         data: @task.to_h
       }
-      Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
+      registry = SchemaRegistry.validate_event(event, 'task.created')
+      if registry.success?
+        Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
+      else
+        raise 'InvalidEventError'
+      end
+      
       @task.produce_assign_event
       render json: @task.to_h, states: 201
     else
@@ -35,10 +45,19 @@ class TasksController < ApplicationController
 
     if @task.update(task_params)
       event = {
-        event_name: 'TaskChanged',
+        event_id: SecureRandom.uuid,
+        event_version: 1,
+        event_name: 'TaskCreated',
+        event_time: Time.current.to_s,
+        producer: 'tasks_service',
         data: @task.to_h
       }
-      Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
+      registry = SchemaRegistry.validate_event(event, 'task.changed')
+      if registry.success?
+        Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
+      else
+        raise 'InvalidEventError'
+      end
       render json: @task.reload.to_h, states: 201
     else
       render json: { errors: @task.errors }, states: 422
@@ -51,14 +70,24 @@ class TasksController < ApplicationController
 
     @task.finish!
     event = {
+      event_id: SecureRandom.uuid,
+      event_version: 1,
       event_name: 'TaskFinished',
+      event_time: Time.current.to_s,
+      producer: 'tasks_service',
       data: {
+        public_id: @task.public_id,
         user_id: @task.user.public_id,
         assign_cost: @task.assign_cost,
         finish_cost: @task.finish_cost,
       }
     }
-    Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
+    registry = SchemaRegistry.validate_event(event, 'task.finished')
+    if registry.success?
+      Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
+    else
+      raise 'InvalidEventError'
+    end
 
     head :ok
   end
@@ -73,7 +102,7 @@ class TasksController < ApplicationController
         event = {
           event_name: 'TaskShuffled',
           data: {
-            id: task.id,
+            public_id: task.public_id,
             old_user_id: old_user_id,
             new_user_id: task.user.public_id
           }
@@ -91,7 +120,7 @@ class TasksController < ApplicationController
     @task.destroy
     event = {
       event_name: 'TaskDeleted',
-      data: @task.id
+      data: { public_id: @task.public_id }
     }
     Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
 

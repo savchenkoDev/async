@@ -11,7 +11,11 @@ class Task < ApplicationRecord
 
   def produce_assign_event
     event = {
+      event_id: SecureRandom.uuid,
+      event_version: 1,
       event_name: 'TaskAssigned',
+      event_time: Time.current.to_s,
+      producer: 'user_service',
       data: {
         user_id: self.user.public_id,
         public_id: self.public_id,
@@ -20,7 +24,12 @@ class Task < ApplicationRecord
       }
     }
 
-    Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
+    registry = SchemaRegistry.validate_event(event, 'task.assigned')
+    if registry.success?
+      Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
+    else
+      raise 'InvalidEventError'
+    end
   end
 
   def finish!

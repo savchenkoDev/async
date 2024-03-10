@@ -1,3 +1,9 @@
+PATH
+  remote: ../event_schema_registry
+  specs:
+    schema_registry (1)
+      json-schema
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -66,6 +72,8 @@ GEM
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
+    addressable (2.8.6)
+      public_suffix (>= 2.0.2, < 6.0)
     base64 (0.2.0)
     bcrypt (3.1.20)
     bigdecimal (3.1.6)
@@ -125,6 +133,8 @@ GEM
       activesupport (>= 6.1)
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
+    json-schema (4.1.1)
+      addressable (>= 2.8)
     jwt (2.8.1)
       base64
     karafka-core (2.3.0)
@@ -147,6 +157,7 @@ GEM
     mini_portile2 (2.8.5)
     minitest (5.22.2)
     msgpack (1.7.2)
+    multi_json (1.15.0)
     net-imap (0.4.10)
       date
       net-protocol
@@ -161,6 +172,7 @@ GEM
       racc (~> 1.4)
     orm_adapter (0.5.0)
     pg (1.5.5)
+    public_suffix (5.0.4)
     puma (5.6.8)
       nio4r (~> 2.0)
     racc (1.7.3)
@@ -222,9 +234,11 @@ DEPENDENCIES
   config
   devise
   jwt
+  multi_json
   pg (~> 1.1)
   puma (~> 5.0)
   rails (~> 7.0.8, >= 7.0.8.1)
+  schema_registry!
   tzinfo-data
   waterdrop
 

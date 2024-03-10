@@ -23,26 +23,42 @@ class Account < ApplicationRecord
 
   def produce_account
     event = {
+      event_id: SecureRandom.uuid,
+      event_version: 1,
       event_name: 'AccountCreated',
+      event_time: Time.current.to_s,
+      producer: 'accounting_service',
       data: self.to_h
     }
-
-    Producer.produce_async(topic: 'accounts-stream', payload: event.to_json)
+    registry = SchemaRegistry.validate_event(event, 'account.created')
+    if registry.success?
+      Producer.produce_async(topic: 'accounts-stream', payload: event.to_json
+    else
+      raise 'InvalidEventError'
+    end
   end
 
   def produce_update
-     event = {
-      event_name: 'AccountBalanceUpdated',
+    event = {
+      event_id: SecureRandom.uuid,
+      event_version: 1,
+      event_name: 'AccountChanged',
+      event_time: Time.current.to_s,
+      producer: 'accounting_service',
       data: self.to_h
     }
-
-    Producer.produce_async(topic: 'accounts', payload: event.to_json)
+    registry = SchemaRegistry.validate_event(event, 'account.changed')
+    if registry.success?
+      Producer.produce_async(topic: 'accounts', payload: event.to_json)
+    else
+      raise 'InvalidEventError'
+    end
   end
 
   def produce_destroy
     event = {
       event_name: 'AccountDeleted',
-      data: self.id
+      data: { public_id: self.public_id}
     }
 
     Producer.produce_async(topic: 'accounts-stream', payload: event.to_json)

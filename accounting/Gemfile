@@ -24,6 +24,8 @@ gem 'will_paginate'
 gem 'karafka'
 gem 'waterdrop'
 
+gem "schema_registry", path: "../event_schema_registry"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 

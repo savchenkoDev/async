@@ -1,3 +1,9 @@
+PATH
+  remote: ../event_schema_registry
+  specs:
+    schema_registry (1)
+      json-schema
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -66,6 +72,8 @@ GEM
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
+    addressable (2.8.6)
+      public_suffix (>= 2.0.2, < 6.0)
     bindex (0.8.1)
     bootsnap (1.18.3)
       msgpack (~> 1.2)
@@ -90,6 +98,8 @@ GEM
     jbuilder (2.11.5)
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
+    json-schema (4.1.1)
+      addressable (>= 2.8)
     karafka (2.3.3)
       karafka-core (>= 2.3.0, < 2.4.0)
       waterdrop (>= 2.6.12, < 3.0.0)
@@ -129,6 +139,7 @@ GEM
     nokogiri (1.16.2-x86_64-darwin)
       racc (~> 1.4)
     pg (1.5.6)
+    public_suffix (5.0.4)
     puma (5.6.8)
       nio4r (~> 2.0)
     racc (1.7.3)
@@ -195,6 +206,7 @@ DEPENDENCIES
   pg (~> 1.1)
   puma (~> 5.0)
   rails (~> 7.0.8, >= 7.0.8.1)
+  schema_registry!
   tzinfo-data
   waterdrop
   web-console

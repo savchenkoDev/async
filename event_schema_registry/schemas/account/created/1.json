@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Account.Created.v1",
+  "description": "json schema for account created event (version 1)",
+
+  "definitions": {
+    "event_data": {
+      "type": "object",
+      "properties": {
+        "public_id": { "type": "string" },
+        "balance": { "type": "number" }
+      },
+      "required": ["public_id", "balance"]
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "event_id": { "type": "string" },
+    "event_version": { "enum": [1] },
+    "event_name": { "type": "string" },
+    "event_time": { "type": "string" },
+    "producer": { "type": "string" },
+    "data": {
+      "$ref": "#/definitions/event_data"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_version",
+    "event_name",
+    "event_time",
+    "producer",
+    "data"
+  ]
+}
