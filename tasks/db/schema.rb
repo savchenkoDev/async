@@ -19,7 +19,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_02_131212) do
     t.uuid "public_id"
     t.string "title"
     t.string "description"
-    t.decimal "cost"
+    t.decimal "assign_cost"
+    t.decimal "finish_cost"
     t.string "status", default: "opened", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

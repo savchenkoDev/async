@@ -19,14 +19,16 @@ class Task < ApplicationRecord
       public_id: self.public_id,
       title: self.title,
       description: self.description,
-      cost: self.cost.to_f
+      assign_cost: self.assign_cost.to_f,
+      finish_cost: self.finish_cost.to_f
     }
   end
 
   private
 
   def assign_attrs
-    self.cost = rand(10..20)
+    self.assign_cost = rand(10..20)
+    self.finish_cost = rand(20..40)
     self.user_id = User.where(role: 'popug').sample.id
     self.public_id = SecureRandom.uuid
     while Task.exists?(public_id: public_id) do
@@ -38,8 +40,9 @@ class Task < ApplicationRecord
     event = {
       event_name: 'TaskAssigned',
       data: {
-        user_id: self.user_id,
-        cost: self.cost
+        user_id: self.user.public_id,
+        assign_cost: self.assign_cost,
+        finish_cost: self.finish_cost
       }
     }
 

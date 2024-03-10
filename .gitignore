@@ -21,6 +21,8 @@ tasks/tmp
 tasks/log
 accounting/tmp
 accounting/log
+analytics/tmp
+analytics/log
 
 ## Specific to RubyMotion:
 .dat*

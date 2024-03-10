@@ -45,7 +45,7 @@ class TasksController < ApplicationController
   end
 
   def finish
-    @task = Task.find(params[:id])
+    @task = Task.opened.find(params[:id])
     return render json: { error: 'Unauthorized' }, status: 403 unless current_user_id == @task.user.public_id
 
     @task.finish!
@@ -53,7 +53,8 @@ class TasksController < ApplicationController
       event_name: 'TaskFinished',
       data: {
         user_id: @task.user.public_id,
-        cost: @task.cost,
+        assign_cost: @task.assign_cost,
+        finish_cost: @task.finish_cost,
       }
     }
     Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
