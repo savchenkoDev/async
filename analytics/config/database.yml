@@ -1,0 +1,22 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  host: localhost
+  port: 5434
+  username: postgres
+  password: password
+
+development:
+  <<: *default
+  database: analytics_dev
+
+test:
+  <<: *default
+  database: analytics_test
+
+production:
+  <<: *default
+  database: analytics_production
+  username: analytics
+  password: <%= ENV["ANALYTICS_DATABASE_PASSWORD"] %>

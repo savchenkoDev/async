@@ -1,0 +1,7 @@
+app:
+  name: tasks
+  secret: 63c15ef2f4b8ae0e9c9f8761b6063ef16668
+auth:
+  url: http://localhost:3001
+kafka:
+  url: localhost:29092

@@ -23,6 +23,7 @@ class TasksController < ApplicationController
         data: @task.to_h
       }
       Producer.produce_async(topic: 'tasks-stream', payload: event.to_json)
+      @task.produce_assign_event
       render json: @task.to_h, states: 201
     else
       render json: { errors: @task.errors }, states: 201

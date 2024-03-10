@@ -3,12 +3,25 @@ class Task < ApplicationRecord
   validates :title, :description, presence: :true
 
   before_create :assign_attrs
-  after_create :produce_event
 
   enum :status, {
     opened: 'opened',
     finished: 'finished'
   }
+
+  def produce_assign_event
+    event = {
+      event_name: 'TaskAssigned',
+      data: {
+        user_id: self.user.public_id,
+        public_id: self.public_id,
+        assign_cost: self.assign_cost,
+        finish_cost: self.finish_cost
+      }
+    }
+
+    Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
+  end
 
   def finish!
     update!(status: 'finished')
@@ -36,16 +49,5 @@ class Task < ApplicationRecord
     end
   end
 
-  def produce_event
-    event = {
-      event_name: 'TaskAssigned',
-      data: {
-        user_id: self.user.public_id,
-        assign_cost: self.assign_cost,
-        finish_cost: self.finish_cost
-      }
-    }
-
-    Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
-  end
+  
 end

@@ -2,17 +2,17 @@ class DashboardController < ActionController::Base
   include Authenticable
 
   def index
-    daily_results = Task.select("SUM(assign_cost) AS assign, SUM(finish_cost) AS finish, status, date_trunc('day', tasks.created_at) AS date")
-        .group(:date, :status, :id)
+    daily_tasks = Task.where('created_at >= ?', Date.current.beginning_of_day)
+    assign = daily_tasks.opened.sum(:assign_cost)
+    finish = daily_tasks.finished.sum(:finish_cost)
 
-    response = daily_results.map do |day_r|
-      {
-        date: day_r.date.strftime('%d.%m.%Y'),
-        assign: day_r.assign.to_f,
-        finish: day_r.finish.to_f,
-        total: day_r.assign.to_f - day_r.finish.to_f
-      }
-    end
+    response = {
+      date: Date.current.strftime('%d.%m.%Y'),
+      count: daily_tasks.count,
+      assign: assign,
+      finish: finish,
+      total: assign.to_f - finish.to_f
+    }
 
     render json: response
   end
