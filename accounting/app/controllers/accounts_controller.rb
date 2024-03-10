@@ -2,7 +2,6 @@ class AccountsController < ActionController::Base
   include Authenticable
 
   def index
-    byebug
     if %w(admin accountant).include?(current_user.role)
       @accounts = Account.all
     else

@@ -1,4 +1,6 @@
 class Audit < ApplicationRecord
+  self.inheritance_column = :_type
+
   belongs_to :account
 
   after_create :produce_event

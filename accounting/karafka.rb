@@ -16,6 +16,10 @@ KarafkaApp.consumer_groups.draw do
     consumer UsersConsumer
   end
 
+  topic 'tasks-stream' do
+    consumer TasksConsumer
+  end
+
   topic 'tasks-workflow' do
     consumer TasksWorkflowConsumer
   end
