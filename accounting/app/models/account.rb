@@ -2,6 +2,10 @@ class Account < ApplicationRecord
   has_many :audits
   belongs_to :user
 
+  after_create :produce_account
+  after_destroy :produce_destroy
+  after_update :produce_update
+
   def increment!(value)
     self.balance += value
     save!
@@ -22,37 +26,11 @@ class Account < ApplicationRecord
   private
 
   def produce_account
-    event = {
-      event_id: SecureRandom.uuid,
-      event_version: 1,
-      event_name: 'AccountCreated',
-      event_time: Time.current.to_s,
-      producer: 'accounting_service',
-      data: self.to_h
-    }
-    registry = SchemaRegistry.validate_event(event, 'account.created')
-    if registry.success?
-      Producer.produce_async(topic: 'accounts-stream', payload: event.to_json
-    else
-      raise 'InvalidEventError'
-    end
+    Producers::Accounts::CreatedV1.produce(object: self)
   end
 
   def produce_update
-    event = {
-      event_id: SecureRandom.uuid,
-      event_version: 1,
-      event_name: 'AccountChanged',
-      event_time: Time.current.to_s,
-      producer: 'accounting_service',
-      data: self.to_h
-    }
-    registry = SchemaRegistry.validate_event(event, 'account.changed')
-    if registry.success?
-      Producer.produce_async(topic: 'accounts', payload: event.to_json)
-    else
-      raise 'InvalidEventError'
-    end
+    Producers::Accounts::ChangedV1.produce(object: self)
   end
 
   def produce_destroy

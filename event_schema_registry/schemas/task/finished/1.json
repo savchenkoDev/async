@@ -23,6 +23,7 @@
     "event_name": { "type": "string" },
     "event_time": { "type": "string" },
     "producer": { "type": "string" },
+    "registry": { "type": "string" },
     "data": {
       "$ref": "#/definitions/event_data"
     }
@@ -33,6 +34,7 @@
     "event_name",
     "event_time",
     "producer",
+    "registry",
     "data"
   ]
 }

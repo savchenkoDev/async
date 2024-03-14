@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_03_10_094002) do
+ActiveRecord::Schema[7.0].define(version: 2024_03_13_162809) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -21,15 +21,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_10_094002) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "tasks", force: :cascade do |t|
-    t.uuid "public_id"
-    t.string "title"
-    t.string "description"
-    t.decimal "assign_cost"
-    t.decimal "finish_cost"
-    t.string "status", default: "opened", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+  create_table "profits", force: :cascade do |t|
+    t.decimal "amount"
+    t.date "date"
   end
 
   create_table "users", force: :cascade do |t|

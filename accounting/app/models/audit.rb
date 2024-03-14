@@ -8,11 +8,6 @@ class Audit < ApplicationRecord
   private
 
   def produce_event
-    event = {
-      event_name: 'AuditCreated',
-      data: self
-    }
-
-    Producer.produce_async(topic: 'audits-stream', payload: event.to_json)
+    Producers::Audits::CreatedV1.produce(object: self)
   end
 end

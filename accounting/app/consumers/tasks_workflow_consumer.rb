@@ -2,8 +2,9 @@ class TasksWorkflowConsumer < ApplicationConsumer
   def consume
     messages.each do |message|
       data = message.payload['data']
-      user = User.find_by(public_id: data['user_id'])
-      return if user.blank?
+      if SchemaRegistry.validate_event(event, message['registry'], version: message['event_version']).failure?
+        raise InvalidEventError, message
+      end
 
       case message.payload['event_name']
       when 'TaskAssigned'
@@ -24,5 +25,7 @@ class TasksWorkflowConsumer < ApplicationConsumer
         puts "Unknown Event: #{message.payload['event_name']}"
       end
     end
+  rescue InvalidEventError => e
+    # move message to topic 'users-errors'
   end
 end

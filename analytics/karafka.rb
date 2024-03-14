@@ -14,19 +14,7 @@ Karafka.monitor.subscribe(Karafka::Instrumentation::LoggerListener.new)
 
 
 KarafkaApp.consumer_groups.draw do
-  topic 'tasks-stream' do
-    consumer TasksConsumer
-  end
-
-  topic 'tasks-workflow' do
-    consumer TasksConsumer
-  end
-
-  topic 'accounts-stream' do
-    consumer AccountsConsumer
-  end
-
-  topic 'accounts' do
-    consumer AccountsConsumer
+  topic 'audits-stream' do
+    consumer AuditsConsumer
   end
 end

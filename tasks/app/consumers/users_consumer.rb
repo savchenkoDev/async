@@ -1,6 +1,11 @@
 class UsersConsumer < ApplicationConsumer
+  class InvalidEventError < StandardError; end
+
   def consume
     messages.each do |message|
+      if SchemaRegistry.validate_event(event, message['registry'], version: message['event_version']).failure?
+        raise InvalidEventError, message
+      end
       case message.payload['event_name']
       when 'UserCreated'
         user_data = message.payload['data']
@@ -17,4 +22,6 @@ class UsersConsumer < ApplicationConsumer
       end
     end
   end
+rescue InvalidEventError => error
+  # move message to topic 'users-errors'
 end
