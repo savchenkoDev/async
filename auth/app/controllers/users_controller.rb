@@ -12,60 +12,17 @@ class UsersController < ApplicationController
 
     User.transaction do
       @user.save
-      event = {
-        event_id: SecureRandom.uuid,
-        event_version: 1,
-        event_name: 'UserCreated',
-        event_time: Time.current.to_s,
-        producer: 'user_service',
-        data: @user.to_h
-      }
-      registry = SchemaRegistry.validate_event(event, 'user.created')
-
-      if registry.success?
-        Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
-      else
-        raise 'InvalidEventError'
-      end
-    rescue ActiveRecord::Rollback, InvalidEventError
+      Producers::Users::CreatedV1.produce(object: @user)
+    rescue ActiveRecord::Rollback, BaseProducer::InvalidEventError
       render json: @user.errors.messages, status: 422
     end
   end
 
   def update
     @user = User.find(params[:id])
-    
     if @user.update(user_params)
-      event = {
-        event_id: SecureRandom.uuid,
-        event_version: 1,
-        event_name: 'UserChanged',
-        event_time: Time.current.to_s,
-        producer: 'user_service',
-        data: @user.to_h
-      }
-      registry = SchemaRegistry.validate_event(event, 'user.created')
-      if registry.success?
-        Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
-      else
-        raise 'InvalidEventError'
-      end
-
-      if user_params[:role].present?
-        event = {
-          event_id: SecureRandom.uuid,
-          event_version: 1,
-          event_name: 'UserRoleUpdated',
-          event_time: Time.current.to_s,
-          producer: 'user_service',
-          data: @user.to_h
-        }
-        registry = SchemaRegistry.validate_event(event, 'user.created')
-        if registry.success?
-          Producer.produce_sync(payload: event.to_json, topic: 'users')
-        else
-          raise 'InvalidEventError'
-        end
+      Producers::Users::ChangedV1.produce(object: @user)
+      Producers::Users::RoleChangedV1.produce(object: @user) if user_params[:role].present?
       end
       render json: @user.to_h, status: 201
     else
@@ -77,11 +34,7 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
 
     @user.destroy
-    event = {
-      event_name: 'UserDeleted',
-      data: { public_id: @user.public_id}
-    }
-    Producer.produce_sync(payload: event.to_json, topic: 'users-stream')
+    Producers::Users::RoleChangedV1.produce(object: @user) if user_params[:role].present?
     head :ok
   end
 

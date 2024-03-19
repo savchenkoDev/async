@@ -1,6 +1,7 @@
 class Task < ApplicationRecord
   belongs_to :user
   validates :title, :description, presence: :true
+  validates :validate_title
 
   before_create :assign_attrs
 
@@ -8,29 +9,6 @@ class Task < ApplicationRecord
     opened: 'opened',
     finished: 'finished'
   }
-
-  def produce_assign_event
-    event = {
-      event_id: SecureRandom.uuid,
-      event_version: 1,
-      event_name: 'TaskAssigned',
-      event_time: Time.current.to_s,
-      producer: 'user_service',
-      data: {
-        user_id: self.user.public_id,
-        public_id: self.public_id,
-        assign_cost: self.assign_cost,
-        finish_cost: self.finish_cost
-      }
-    }
-
-    registry = SchemaRegistry.validate_event(event, 'task.assigned')
-    if registry.success?
-      Producer.produce_async(topic: 'tasks-workflow', payload: event.to_json)
-    else
-      raise 'InvalidEventError'
-    end
-  end
 
   def finish!
     update!(status: 'finished')
@@ -47,6 +25,12 @@ class Task < ApplicationRecord
   end
 
   private
+
+  def validate_title
+    return unless title.match?(/[\[\]]/)
+
+    errors.add(:title, 'contains jira_id')
+  end
 
   def assign_attrs
     self.assign_cost = rand(10..20)

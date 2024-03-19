@@ -41,6 +41,7 @@ gem 'config'
 gem 'will_paginate'
 gem 'karafka'
 gem 'waterdrop'
+gem 'multi_json'
 
 gem "schema_registry", path: "../event_schema_registry"
 
